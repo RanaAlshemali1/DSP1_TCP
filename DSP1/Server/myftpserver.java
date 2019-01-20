@@ -1,12 +1,16 @@
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.nio.file.Files;
 import java.util.Scanner; 
 
 
-
+// Each client will be handled here for multothreding purposes
 class ClientHandler  extends Thread {  
 
 	DataInputStream dis; 
@@ -14,49 +18,70 @@ class ClientHandler  extends Thread {
 	Socket socket; 
 	static boolean isStopped = false;
 	String receivedMessage = "";
-	String returnedMessage = "";
+	String returnedMessage = ""; 
 
-	//get put delete ls cd mkdir pwd quit
+	//List of commands: get put delete ls cd mkdir pwd quit
 	public static final String GET_COMMAND = "get";
 	public static final String PUT_COMMAND = "put";
 	public static final String DELETE_COMMAND = "delete";
+
 	public static final String LS_COMMAND = "ls";
+	public static final String LS_NO_SUBDIR = "There are no file or subdirectory";
+
 	public static final String CD_COMMAND = "cd";
 	public static final String MKDIR_COMMAND = "mkdir";
 	public static final String PWD_COMMAND = "pwd";
+
 	public static final String QUIT_COMMAND = "quit";
+	public static final String QUIT_COMMAND_MESSAGE = "Connection closed!"; 
 
-	public void getCommand() {
+	public static final String INVALID_INPUT = "Invalid input ..";
 
-	}
-	public void putCommand() {
-
-	}
-	public void deleteCommand() {
-
-	}
-	public void lsCommand() {
-
-	}
-	public void cdCommand() {
-
-	}
-	public void mkdirCommand() {
-
-	}
-	public void pwdCommand() {
-
-	}
-	public void quitCommand() throws IOException {
-
-		returnedMessage = "You Entered quit command";
+	// 8 methods, each for one of the 8 commands
+	// --------------------- GET FILE TO USER - SEND TO USER ------------------------
+	public void getCommand(DataOutputStream dos) throws IOException {
+		returnedMessage = "You Entered get command";
 		dos.writeUTF(returnedMessage);
+	}
+
+	// ------------------- PUT FILE FROM USER - RECEIVE FROM USER--------------------
+	public void putCommand(DataOutputStream dos) throws IOException {
+		returnedMessage = "You Entered put command";
+		dos.writeUTF(returnedMessage);
+	}
+
+	public void deleteCommand(DataOutputStream dos) throws IOException {
+		returnedMessage = "You Entered delete command";
+		dos.writeUTF(returnedMessage);
+	}
+
+	public void lsCommand(DataOutputStream dos) throws IOException {
+		returnedMessage = "You Entered ls command";
+		dos.writeUTF(returnedMessage);
+	}
+
+	public void cdCommand(DataOutputStream dos) throws IOException {
+		returnedMessage = "You Entered cd command";
+		dos.writeUTF(returnedMessage);
+	}
+
+	public void mkdirCommand(DataOutputStream dos) throws IOException {
+		returnedMessage = "You Entered mkdir command";
+		dos.writeUTF(returnedMessage);
+	}
+
+	public void pwdCommand(DataOutputStream dos) throws IOException { 
+		returnedMessage = "You Entered pwd command";
+		dos.writeUTF(returnedMessage);
+	}
+
+	public void quitCommand(DataOutputStream dos) throws IOException { 
 		System.out.println("myftpserver> Client " + this.socket + " sent a quit command");
 		System.out.println("myftpserver> Closing this connection ..."); 
+		dos.writeUTF(QUIT_COMMAND_MESSAGE);
 		isStopped = true;
 		this.socket.close();
-		System.out.println("myftpserver> Connection closed!");
-		
+		System.out.println("myftpserver> " + QUIT_COMMAND_MESSAGE);
 	}	
 
 	public ClientHandler(Socket socket, DataInputStream dis, DataOutputStream dos) { 
@@ -67,66 +92,67 @@ class ClientHandler  extends Thread {
 
 	@Override
 	public void run() {
-		
-		System.out.println("2");
+
 		isStopped = false;
 
 		try {
-			dos.writeUTF("You are connected ..");
-			System.out.println("3");
+			dos.writeUTF("You are connected .."); 
 		} catch (IOException e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		}
+		// keep listening for the client's commands
 		while (!isStopped) {
 			try {
-				//dos.writeUTF("skip");
-				System.out.println("4");
+				//dos.writeUTF("skip"); 
 				receivedMessage = dis.readUTF(); 
-				System.out.print("myftpserver> ");
-				System.out.println(receivedMessage);
+				String command = "";
+				String fileDirName = "";
+
+				if(receivedMessage.contains(" ")) {
+					String[] splittedCommand = receivedMessage.split(" ");
+					command = splittedCommand[0];
+					fileDirName = splittedCommand[1];
+				}else {
+					command = receivedMessage;
+				}
+				System.out.println("myftpserver> "+receivedMessage);
+
 				isStopped = false;
-				switch(receivedMessage) {
+
+				switch(command) {
 				case GET_COMMAND:
-					returnedMessage = "You Entered get command";
-					dos.writeUTF(returnedMessage);
+					getCommand(dos);
 					break;
-				case PUT_COMMAND:
-					returnedMessage = "You Entered put command";
-					dos.writeUTF(returnedMessage);
+				case PUT_COMMAND: 
+					putCommand(dos); 
 					break;
 				case DELETE_COMMAND:
-					returnedMessage = "You Entered delete command";
-					dos.writeUTF(returnedMessage);
+					deleteCommand(dos);
 					break;
 				case LS_COMMAND:
-					returnedMessage = "You Entered ls command";
-					dos.writeUTF(returnedMessage);
+					lsCommand(dos);
 					break;
 				case CD_COMMAND:
-					returnedMessage = "You Entered cd command";
-					dos.writeUTF(returnedMessage);
+					cdCommand(dos);
 					break;
 				case MKDIR_COMMAND:
-					returnedMessage = "You Entered mkdir command";
-					dos.writeUTF(returnedMessage);
+					mkdirCommand(dos);
 					break;
 				case PWD_COMMAND:
-					returnedMessage = "You Entered pwd command";
-					dos.writeUTF(returnedMessage);
+					pwdCommand(dos);
 					break;
 				case QUIT_COMMAND:
-					quitCommand();
+					quitCommand(dos);
 					break;
 				default: 
-					dos.writeUTF("Invalid input .."); 
+					dos.writeUTF(INVALID_INPUT); 
 					break; 
 				}
 			}catch ( IOException e) {
 				e.printStackTrace();
 			}
-		}
-		System.out.println("5");
+		} 
 
 		try { 
 			this.dis.close();
@@ -154,8 +180,7 @@ public class myftpserver {
 		while (!isStopped) {
 			Socket socket = null;
 
-			try {
-				System.out.println("1");
+			try { 
 				// incoming client requests are received using this socket object
 				socket = serverSocket.accept();
 				System.out.println("myftpserver> A new client is connected: "+ socket);
