@@ -14,8 +14,7 @@ public class myftp {
 	static String hostName = "localhost";
 	static boolean isStopped = false;
 	static DataInputStream dis;
-	static DataOutputStream dos;
-	static String currentDir = System.getProperty("user.dir");
+	static DataOutputStream dos; 
 
 
 	public static final String GET_COMMAND = "get";
