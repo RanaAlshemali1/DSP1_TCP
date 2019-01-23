@@ -51,7 +51,11 @@ public class myftp {
 
 	public static void lsCommand(DataInputStream dis) throws IOException {
 		String receivedMessage = dis.readUTF(); 
-		System.out.println("myftp> "+ receivedMessage);
+		if (receivedMessage.equals(LS_NO_SUBDIR)) {
+			System.out.println(receivedMessage);
+		}else {
+			System.out.println(receivedMessage);
+		}
 	}
 
 	public static void cdCommand(DataInputStream dis) throws IOException {

@@ -19,6 +19,7 @@ class ClientHandler  extends Thread {
 	static boolean isStopped = false;
 	String receivedMessage = "";
 	String returnedMessage = ""; 
+	String currentDir = System.getProperty("user.dir");
 
 	//List of commands: get put delete ls cd mkdir pwd quit
 	public static final String GET_COMMAND = "get";
@@ -56,8 +57,25 @@ class ClientHandler  extends Thread {
 	}
 
 	public void lsCommand(DataOutputStream dos) throws IOException {
-		returnedMessage = "You Entered ls command";
-		dos.writeUTF(returnedMessage);
+		 
+		currentDir = System.getProperty("user.dir");
+		File folder = new File(currentDir);
+		File[] listOfFiles = folder.listFiles();
+
+		if(listOfFiles != null && listOfFiles.length == 0){
+			dos.writeUTF(LS_NO_SUBDIR);
+		}else { 
+			String filesList = "";
+			for (int i = 0; i < listOfFiles.length; i++) {
+				if(i ==0) {
+					filesList = listOfFiles[i].getName();
+				}else {
+					filesList += " \n" + listOfFiles[i].getName();
+				}
+			}
+			dos.writeUTF(filesList);
+			System.out.println("myftpserver> " + filesList);
+		}
 	}
 
 	public void cdCommand(DataOutputStream dos) throws IOException {
