@@ -1,3 +1,4 @@
+import java.io.BufferedInputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
@@ -40,10 +41,33 @@ class ClientHandler  extends Thread {
 
 	// 8 methods, each for one of the 8 commands
 	// --------------------- GET FILE TO USER - SEND TO USER ------------------------
-	public void getCommand(DataOutputStream dos) throws IOException {
-		returnedMessage = "You Entered get command";
-		dos.writeUTF(returnedMessage);
+	public void getCommand(String fileDirName, DataOutputStream dos) throws IOException {
+			File file = new File(fileDirName);
+			if(file.exists()) {
+				//get file size
+				long fileSize = file.length();
+				//send file size
+				System.out.println("Gotcha!");
+				dos.writeBytes(fileSize + "\n");
+				byte[] buffer = new byte[8192];
+				try {
+					BufferedInputStream in = new BufferedInputStream(new FileInputStream(file));
+					int count = 0;
+					while((count = in.read(buffer)) > 0)
+						dos.write(buffer, 0, count);
+					returnedMessage = "Successfully get: "+ fileDirName;
+					in.close();	
+					dos.writeUTF(fileDirName);
+					System.out.println("myftpserver> " + fileDirName);
+				} 
+				catch(Exception e) {
+					System.out.println("transfer error: " + fileDirName);
+				}		
+		}
+		
+			
 	}
+
 
 	// ------------------- PUT FILE FROM USER - RECEIVE FROM USER--------------------
 	public void putCommand(DataOutputStream dos) throws IOException {
@@ -51,10 +75,26 @@ class ClientHandler  extends Thread {
 		dos.writeUTF(returnedMessage);
 	}
 
-	public void deleteCommand(DataOutputStream dos) throws IOException {
-		returnedMessage = "You Entered delete command";
+
+	public void deleteCommand(String fileDirName, DataOutputStream dos) throws IOException {
+		File file = new File(fileDirName);
+		if(file.exists()){
+			boolean result = file.delete();
+			if(result){
+				returnedMessage = "Successfully deleted: "+ fileDirName;	
+			}
+			else{
+				returnedMessage = "Failed deleting: "+ fileDirName;
+			}
+		}else{
+			returnedMessage = "File does not exist";
+		}
+		System.out.println(returnedMessage);
+		System.out.println("myftpserver> ");
 		dos.writeUTF(returnedMessage);
+		
 	}
+		
 
 	public void lsCommand(DataOutputStream dos) throws IOException {
 		 
@@ -78,19 +118,51 @@ class ClientHandler  extends Thread {
 		}
 	}
 
-	public void cdCommand(DataOutputStream dos) throws IOException {
-		returnedMessage = "You Entered cd command";
-		dos.writeUTF(returnedMessage);
+	public void cdCommand(String fileDirName, DataOutputStream dos) throws IOException {
+		currentDir = System.getProperty("user.dir");
+		String splitDirectories[] = currentDir.split("/");
+		if(fileDirName.equals("..")) {
+			//cd .. select substring of currentDir: currentDir -last file - '/'
+			currentDir = currentDir.substring(0 , currentDir.length() - splitDirectories[splitDirectories.length - 1].length() - 1);
+			System.out.println(currentDir);
+			//cd. 
+		} else if(fileDirName.equals(".")){
+			currentDir = currentDir;
+			//cd
+		} else {
+			currentDir = currentDir + "/" + fileDirName;
+		}
+		System.setProperty("user.dir", currentDir);
+		System.out.println("myftpserver> ");
+		dos.writeUTF("OK!!");
 	}
+		
 
-	public void mkdirCommand(DataOutputStream dos) throws IOException {
-		returnedMessage = "You Entered mkdir command";
+	public void mkdirCommand(String fileDirName, DataOutputStream dos) throws IOException {
+		
+		
+		File file = new File(fileDirName);
+		if(!file.exists()){
+			boolean result = file.mkdir();
+			if(result){
+				returnedMessage = "Successfully created: "+ fileDirName;	
+			}
+			else{
+				returnedMessage = "Failed creating: "+ fileDirName;
+			}
+		}else{
+			returnedMessage = "File already exists";
+		}
+		System.out.println(returnedMessage);
+		System.out.println("myftpserver> ");
 		dos.writeUTF(returnedMessage);
+		
 	}
 
 	public void pwdCommand(DataOutputStream dos) throws IOException { 
-		returnedMessage = "You Entered pwd command";
-		dos.writeUTF(returnedMessage);
+		currentDir = System.getProperty("user.dir");
+		dos.writeUTF(currentDir);
+		System.out.println("myftpserver> ");
 	}
 
 	public void quitCommand(DataOutputStream dos) throws IOException { 
@@ -131,7 +203,9 @@ class ClientHandler  extends Thread {
 					String[] splittedCommand = receivedMessage.split(" ");
 					command = splittedCommand[0];
 					fileDirName = splittedCommand[1];
-				}else {
+				}
+				
+				else {
 					command = receivedMessage;
 				}
 				System.out.println("myftpserver> "+receivedMessage);
@@ -140,22 +214,22 @@ class ClientHandler  extends Thread {
 
 				switch(command) {
 				case GET_COMMAND:
-					getCommand(dos);
+					getCommand(fileDirName,dos);
 					break;
 				case PUT_COMMAND: 
 					putCommand(dos); 
 					break;
 				case DELETE_COMMAND:
-					deleteCommand(dos);
+					deleteCommand(fileDirName, dos);
 					break;
 				case LS_COMMAND:
 					lsCommand(dos);
 					break;
 				case CD_COMMAND:
-					cdCommand(dos);
+					cdCommand(fileDirName, dos);
 					break;
 				case MKDIR_COMMAND:
-					mkdirCommand(dos);
+					mkdirCommand(fileDirName, dos);
 					break;
 				case PWD_COMMAND:
 					pwdCommand(dos);
@@ -220,6 +294,3 @@ public class myftpserver {
 		}
 	}
 }
-
-
-
