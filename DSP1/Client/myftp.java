@@ -2,6 +2,7 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -9,12 +10,13 @@ import java.util.Scanner;
 
 public class myftp {
 
-	static int clientPort = 8080;
+	static int clientPort = 1234;
 	static Socket clientSocket = null;
 	static String hostName = "localhost";
 	static boolean isStopped = false;
 	static DataInputStream dis;
 	static DataOutputStream dos; 
+	
 
 
 	public static final String GET_COMMAND = "get";
@@ -33,9 +35,22 @@ public class myftp {
 
 	// 8 methods, each for one of the 8 commands
 	// --------------------- GET FILE FROM SERVER - RECEIVE FROM SERVER ------------------------
-	public static void getCommand(DataInputStream dis) throws IOException {
-		String receivedMessage = dis.readUTF(); 
-		System.out.println("myftp> "+ receivedMessage);
+	public static void getCommand(String fileDirName, DataInputStream dis) throws IOException {
+
+		//get file size
+		long fileSize = dis.readByte();
+		System.out.println(fileSize);
+		FileOutputStream f = new FileOutputStream(new File(fileDirName));
+		int count = 0;
+		byte[] buffer = new byte[8192];
+		long bytesReceived = 0;
+		while(bytesReceived < fileSize) {
+			count = dis.read(buffer);
+			f.write(buffer, 0, count);
+			bytesReceived += count;
+		}
+		f.close();
+		System.out.println("myftp> ");
 	}
 
 	// ------------------- PUT FILE TO SERVER - SEND TO SERVER--------------------
@@ -60,6 +75,7 @@ public class myftp {
 	}
 
 	public static void mkdirCommand(DataInputStream dis) throws IOException {
+		
 		String receivedMessage = dis.readUTF(); 
 		System.out.println("myftp> "+ receivedMessage);
 	}
@@ -101,7 +117,7 @@ public class myftp {
 
 			while (!isStopped) {
 				isStopped = false; 
-				System.out.print("myftp> "); 
+				System.out.print("myftp> ");
 				String sentMessage = scanner.nextLine();
 				dos.writeUTF(sentMessage);
 
@@ -118,7 +134,7 @@ public class myftp {
 
 				switch(command) {
 				case GET_COMMAND:
-					getCommand(dis);
+					getCommand(fileDirName, dis);
 					break;
 				case PUT_COMMAND: 
 					putCommand(dis); 
