@@ -47,32 +47,38 @@ class ClientHandler  extends Thread {
 				//get file size
 				long fileSize = file.length();
 				//send file size
-				System.out.println("Gotcha!");
 				dos.writeBytes(fileSize + "\n");
 				byte[] buffer = new byte[8192];
-				try {
-					BufferedInputStream in = new BufferedInputStream(new FileInputStream(file));
-					int count = 0;
-					while((count = in.read(buffer)) > 0)
-						dos.write(buffer, 0, count);
-					returnedMessage = "Successfully get: "+ fileDirName;
-					in.close();	
-					dos.writeUTF(fileDirName);
-					System.out.println("myftpserver> " + fileDirName);
-				} 
-				catch(Exception e) {
-					System.out.println("transfer error: " + fileDirName);
-				}		
+				BufferedInputStream in = new BufferedInputStream(new FileInputStream(file));
+				int count = 0;
+				while((count = in.read(buffer)) > 0)
+				dos.write(buffer, 0, count);
+				returnedMessage = "Successfully get: "+ fileDirName;
+			}
+				else {
+				returnedMessage = "transfer error: " + fileDirName;
+				}	
+			dos.writeUTF(returnedMessage);
 		}
-		
-			
-	}
+
 
 
 	// ------------------- PUT FILE FROM USER - RECEIVE FROM USER--------------------
-	public void putCommand(DataOutputStream dos) throws IOException {
-		returnedMessage = "You Entered put command";
-		dos.writeUTF(returnedMessage);
+	public void putCommand(String fileDirName, DataOutputStream dos) throws IOException {
+		//get file size
+				String fileSize = dis.readLine();
+				FileOutputStream f = new FileOutputStream(new File(fileDirName));
+				int count = 0;
+				byte[] buffer = new byte[8192];
+				long bytesReceived = 0;
+				while(bytesReceived < Integer.parseInt(fileSize)) {
+					count = dis.read(buffer);
+					f.write(buffer, 0, count);
+					bytesReceived += count;
+				};
+				returnedMessage = "Successfully put: "+ fileDirName;
+				f.close();
+				dos.writeUTF(returnedMessage);
 	}
 
 
@@ -217,7 +223,7 @@ class ClientHandler  extends Thread {
 					getCommand(fileDirName,dos);
 					break;
 				case PUT_COMMAND: 
-					putCommand(dos); 
+					putCommand(fileDirName, dos); 
 					break;
 				case DELETE_COMMAND:
 					deleteCommand(fileDirName, dos);
