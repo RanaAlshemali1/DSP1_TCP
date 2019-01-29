@@ -1,3 +1,4 @@
+import java.io.BufferedInputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
@@ -38,26 +39,41 @@ public class myftp {
 	public static void getCommand(String fileDirName, DataInputStream dis) throws IOException {
 
 		//get file size
-		long fileSize = dis.readByte();
-		System.out.println(fileSize);
+		String fileSize = dis.readLine();
 		FileOutputStream f = new FileOutputStream(new File(fileDirName));
 		int count = 0;
 		byte[] buffer = new byte[8192];
 		long bytesReceived = 0;
-		while(bytesReceived < fileSize) {
+		while(bytesReceived < Integer.parseInt(fileSize)) {
 			count = dis.read(buffer);
 			f.write(buffer, 0, count);
 			bytesReceived += count;
-		}
+		};
 		f.close();
-		System.out.println("myftp> ");
 	}
 
 	// ------------------- PUT FILE TO SERVER - SEND TO SERVER--------------------
-	public static void putCommand(DataInputStream dis) throws IOException {
-		String receivedMessage = dis.readUTF(); 
-		System.out.println("myftp> "+ receivedMessage);
+	public static void putCommand(String fileDirName,DataInputStream dis) throws IOException {
+		File file = new File(fileDirName);
+		if(file.exists()) {
+			//get file size
+			long fileSize = file.length();
+			//send file size
+			dos.writeBytes(fileSize + "\n");
+			byte[] buffer = new byte[8192];
+			BufferedInputStream in = new BufferedInputStream(new FileInputStream(file));
+			int count = 0;
+			while((count = in.read(buffer)) > 0)
+			dos.write(buffer, 0, count);
+			in.close();
+		}
+			else{
+				System.out.println("transfer error: " + fileDirName);
+			}
+
 	}
+	
+	
 
 	public static void deleteCommand(DataInputStream dis) throws IOException {
 		String receivedMessage = dis.readUTF(); 
@@ -137,7 +153,7 @@ public class myftp {
 					getCommand(fileDirName, dis);
 					break;
 				case PUT_COMMAND: 
-					putCommand(dis); 
+					putCommand(fileDirName, dis); 
 					break;
 				case DELETE_COMMAND:
 					deleteCommand(dis);
