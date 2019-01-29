@@ -53,12 +53,11 @@ class ClientHandler  extends Thread {
 				int count = 0;
 				while((count = in.read(buffer)) > 0)
 				dos.write(buffer, 0, count);
-				returnedMessage = "Successfully get: "+ fileDirName;
 			}
 				else {
-				returnedMessage = "transfer error: " + fileDirName;
+					System.out.println("transfer error: " + fileDirName);
 				}	
-			dos.writeUTF(returnedMessage);
+	
 		}
 
 
