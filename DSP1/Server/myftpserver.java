@@ -28,7 +28,7 @@ class ClientHandler  extends Thread {
 	public static final String DELETE_COMMAND = "delete";
 
 	public static final String LS_COMMAND = "ls";
-	public static final String LS_NO_SUBDIR = "There are no file or subdirectory";
+	public static final String LS_NO_SUBDIR = "There are no files or subdirectories";
 
 	public static final String CD_COMMAND = "cd";
 	public static final String MKDIR_COMMAND = "mkdir";
@@ -156,7 +156,7 @@ class ClientHandler  extends Thread {
 				returnedMessage = "Failed creating: "+ fileDirName;
 			}
 		}else{
-			returnedMessage = "File already exists";
+			returnedMessage = "Folder already exists";
 		}
 		System.out.println(returnedMessage);
 		System.out.println("myftpserver> ");
@@ -267,9 +267,10 @@ public class myftpserver {
 
 	public static void main(String args[]) throws IOException{
 
-		Scanner scanner = new Scanner(System.in);
-		System.out.print("myftpserver> Enter port number: ");
-		String clientPortString = scanner.nextLine();
+		//Scanner scanner = new Scanner(System.in);
+		//System.out.print("myftpserver> Enter port number: ");
+		//String clientPortString = scanner.nextLine();
+		String clientPortString = args[0];
 		serverPort = Integer.valueOf(clientPortString); 
 		serverSocket = new ServerSocket(serverPort);
 		System.out.println("myftpserver> Waiting for a Client to connect ..");

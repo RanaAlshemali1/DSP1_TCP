@@ -25,7 +25,7 @@ public class myftp {
 	public static final String DELETE_COMMAND = "delete";
 
 	public static final String LS_COMMAND = "ls";
-	public static final String LS_NO_SUBDIR = "There are no file or subdirectory";
+	public static final String LS_NO_SUBDIR = "There are no files or subdirectories";
 
 	public static final String CD_COMMAND = "cd";
 	public static final String MKDIR_COMMAND = "mkdir";
@@ -120,9 +120,14 @@ public class myftp {
 
 		try { 
 			Scanner scanner = new Scanner(System.in);
-			System.out.print("myftp> Enter port number: ");
-			String clientPortString = scanner.nextLine();
+			//System.out.print("myftp> Enter machine name: ");
+			//hostName = scanner.nextLine();
+			hostName = args[0];
+			//System.out.print("myftp> Enter port number: ");
+			//String clientPortString = scanner.nextLine();
+			String clientPortString = args[1];
 			clientPort = Integer.valueOf(clientPortString); 
+			
 			Socket clientSocket = new Socket(hostName, clientPort);
 
 			dis = new DataInputStream(clientSocket.getInputStream()); 
@@ -135,6 +140,7 @@ public class myftp {
 				isStopped = false; 
 				System.out.print("myftp> ");
 				String sentMessage = scanner.nextLine();
+				//String sentMessage = args[0];
 				dos.writeUTF(sentMessage);
 
 				String command = "";
