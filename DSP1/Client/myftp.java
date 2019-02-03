@@ -35,6 +35,7 @@ public class myftp {
 	public static final String QUIT_COMMAND_MESSAGE = "Connection closed!"; 
 
 	// 8 methods, each for one of the 8 commands
+	// 8 methods, each for one of the 8 commands
 	// --------------------- GET FILE FROM SERVER - RECEIVE FROM SERVER ------------------------
 	public static void getCommand(String fileDirName, DataInputStream dis) throws IOException {
 
@@ -48,42 +49,32 @@ public class myftp {
 			f.write(buffer, 0, count);
 			chunk_num += 1;	
 		};
-	
-		f.close();
-		System.out.println("myftp> "+ "\n");
+		
+		System.out.println("myftp> "+ "successfully get");
+		
 	}
 
 	// ------------------- PUT FILE TO SERVER - SEND TO SERVER--------------------
 	public static void putCommand(String fileDirName,DataInputStream dis) throws IOException {
 		File file = new File(fileDirName);
-		
-		if(file.exists()) {
-			//get file size
-			long fileSize = file.length();
-			double sizeOfFiles = 8.0 * 1024;
-			int chunks = (int) Math.ceil(fileSize/sizeOfFiles);
-			//send file size
-			dos.writeBytes(fileSize + chunks + "\n");
-			//dos.writeBytes(chunks + "\n");
-			byte[] buffer = new byte[(int) sizeOfFiles];
-			try (FileInputStream fis = new FileInputStream(file);
-					BufferedInputStream bis = new BufferedInputStream(fis)){
+		//get file size
+		long fileSize = file.length();
+		double sizeOfFiles = 8.0 * 1024;
+		int chunks = (int) Math.ceil(fileSize/sizeOfFiles);
+		//send chunks
+		dos.writeBytes(chunks + "\n");
+		byte[] buffer = new byte[(int) sizeOfFiles];
+		try (FileInputStream fis = new FileInputStream(file);
+				BufferedInputStream bis = new BufferedInputStream(fis)){
 					int count = 0;
-					while((count = bis.read(buffer)) > 0) {
-		                	dos.write(buffer, 0, count);
-					}
-			
-		}
-			
-		}
-			else {
-				System.out.println("transfer error: " + fileDirName);
-			}	
-
+					while((count = bis.read(buffer)) > 0) 
+					dos.write(buffer, 0, count);		
+			}
+		String receivedMessage = dis.readUTF(); 
+		System.out.println("myftp> "+ receivedMessage);
+		
 	}
-	
-	
-
+		
 	public static void deleteCommand(DataInputStream dis) throws IOException {
 		String receivedMessage = dis.readUTF(); 
 		System.out.println("myftp> "+ receivedMessage);
