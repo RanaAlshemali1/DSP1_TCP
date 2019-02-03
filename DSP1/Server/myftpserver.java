@@ -43,42 +43,56 @@ class ClientHandler  extends Thread {
 	// --------------------- GET FILE TO USER - SEND TO USER ------------------------
 	public void getCommand(String fileDirName, DataOutputStream dos) throws IOException {
 			File file = new File(fileDirName);
+			
 			if(file.exists()) {
 				//get file size
 				long fileSize = file.length();
+				double sizeOfFiles = 8.0 * 1024;
+				int chunks = (int) Math.ceil(fileSize/sizeOfFiles);
 				//send file size
-				dos.writeBytes(fileSize + "\n");
-				byte[] buffer = new byte[8192];
-				BufferedInputStream in = new BufferedInputStream(new FileInputStream(file));
-				int count = 0;
-				while((count = in.read(buffer)) > 0)
-				dos.write(buffer, 0, count);
+				dos.writeBytes(fileSize + chunks + "\n");
+				//dos.writeBytes(chunks + "\n");
+				byte[] buffer = new byte[(int) sizeOfFiles];
+				try (FileInputStream fis = new FileInputStream(file);
+						BufferedInputStream bis = new BufferedInputStream(fis)){
+						int count = 0;
+						while((count = bis.read(buffer)) > 0) {
+			                	dos.write(buffer, 0, count);
+						}
+				
+			}
+				System.out.println("myftpserver> ");
+				
 			}
 				else {
 					System.out.println("transfer error: " + fileDirName);
 				}	
 	
 		}
+	
 
 
 
 	// ------------------- PUT FILE FROM USER - RECEIVE FROM USER--------------------
 	public void putCommand(String fileDirName, DataOutputStream dos) throws IOException {
-		//get file size
-				String fileSize = dis.readLine();
-				FileOutputStream f = new FileOutputStream(new File(fileDirName));
-				int count = 0;
-				byte[] buffer = new byte[8192];
-				long bytesReceived = 0;
-				while(bytesReceived < Integer.parseInt(fileSize)) {
-					count = dis.read(buffer);
-					f.write(buffer, 0, count);
-					bytesReceived += count;
-				};
-				returnedMessage = "Successfully put: "+ fileDirName;
-				f.close();
-				dos.writeUTF(returnedMessage);
+		
+				
+
+		String chunks = dis.readLine();
+		FileOutputStream f = new FileOutputStream(new File(fileDirName));
+		int count = 0;
+		byte[] buffer = new byte[8 * 1024];
+		int chunk_num = 0;
+		while(chunk_num < Integer.parseInt(chunks)) {
+			count = dis.read(buffer);
+			f.write(buffer, 0, count);
+			chunk_num += 1;	
+		};
+	
+		f.close();
+		System.out.println("myftp> "+ "\n");
 	}
+
 
 
 	public void deleteCommand(String fileDirName, DataOutputStream dos) throws IOException {
