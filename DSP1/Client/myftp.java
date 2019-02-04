@@ -51,10 +51,12 @@ public class myftp {
 				f.write(buffer, 0, count);
 				chunk_num += 1;
 			}
-
-			System.out.println("myftp> " + "successfully get");
+			
+			receivedMessage = dis.readUTF();
+			System.out.println(receivedMessage);
 		}else {
-			System.out.println("myftp> " + receivedMessage);
+			
+			System.out.println(receivedMessage);
 		}
 	
 	}
@@ -78,10 +80,10 @@ public class myftp {
 					dos.write(buffer, 0, count);
 			}
 			String receivedMessage = dis.readUTF();
-			System.out.println("myftp> " + receivedMessage);
+			System.out.println(receivedMessage);
 		}else {
 			String returnedMessage = "File does not exist";
-			System.out.println("myftp> " + returnedMessage);
+			System.out.println(returnedMessage);
 			dos.writeUTF(returnedMessage);
 		}
 		
@@ -90,7 +92,7 @@ public class myftp {
 
 	public static void deleteCommand(DataInputStream dis) throws IOException {
 		String receivedMessage = dis.readUTF();
-		System.out.println("myftp> " + receivedMessage);
+		System.out.println(receivedMessage);
 	}
 
 	public static void lsCommand(DataInputStream dis) throws IOException {
@@ -100,13 +102,13 @@ public class myftp {
 
 	public static void cdCommand(DataInputStream dis) throws IOException {
 		String receivedMessage = dis.readUTF();
-		System.out.println("myftp> " + receivedMessage);
+		System.out.println(receivedMessage);
 	}
 
 	public static void mkdirCommand(DataInputStream dis) throws IOException {
 
 		String receivedMessage = dis.readUTF();
-		System.out.println("myftp> " + receivedMessage);
+		System.out.println(receivedMessage);
 	}
 
 	public static void pwdCommand(DataInputStream dis) throws IOException {
@@ -126,7 +128,7 @@ public class myftp {
 
 	public static void invalidInput(DataInputStream dis) throws IOException {
 		String receivedMessage = dis.readUTF();
-		System.out.println("myftp> " + receivedMessage);
+		System.out.println(receivedMessage);
 	}
 
 	public static void main(String args[]) throws IOException {

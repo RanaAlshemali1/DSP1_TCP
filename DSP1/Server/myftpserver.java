@@ -59,11 +59,15 @@ class ClientHandler extends Thread {
 				while ((count = bis.read(buffer)) > 0)
 					dos.write(buffer, 0, count);
 			}
+			returnedMessage = fileDirName + " is downloaded successfully";
+			dos.writeUTF(returnedMessage);
+			System.out.println(returnedMessage);
 		} else {
 			returnedMessage = "File does not exist";
 			dos.writeUTF(returnedMessage);
+			System.out.println(returnedMessage);
 		}
-
+		
 	}
 
 	// ------------------- PUT FILE FROM USER - RECEIVE FROM
@@ -83,11 +87,12 @@ class ClientHandler extends Thread {
 				chunk_num += 1;
 			}
 
-			returnedMessage = "Successfully put";
-			System.out.println("myftpserver> ");
+			returnedMessage = fileDirName + " is uploaded successfully";
+			System.out.println(returnedMessage);
+			
 			dos.writeUTF(returnedMessage);
 		} else {
-			System.out.println("myftpserver> " + receivedMessage);
+			System.out.println( receivedMessage);
 		}
 
 	}
@@ -104,8 +109,7 @@ class ClientHandler extends Thread {
 		} else {
 			returnedMessage = "File does not exist";
 		}
-		System.out.println(returnedMessage);
-		System.out.println("myftpserver> ");
+		System.out.println(returnedMessage); 
 		dos.writeUTF(returnedMessage);
 
 	}
@@ -127,49 +131,51 @@ class ClientHandler extends Thread {
 					filesList += " \n" + listOfFiles[i].getName();
 				}
 			}
-			dos.writeUTF(filesList);
-			// System.out.println("myftpserver> " );
-			// System.out.println(filesList);
+			dos.writeUTF(filesList); 
 		}
 	}
 
 	public void cdCommand(String fileDirName, DataOutputStream dos) throws IOException {
 		currentDir = System.getProperty("user.dir");
 		String splitDirectories[] = currentDir.split("/");
-		if (fileDirName.equals("..")) { // pass
+		if (fileDirName.equals("..")) {  
 			// cd .. select substring of currentDir: currentDir -last file - '/'
 			currentDir = currentDir.substring(0,
 					currentDir.length() - splitDirectories[splitDirectories.length - 1].length() - 1);
-			System.out.println(currentDir);
 			// cd.
-			System.setProperty("user.dir", currentDir);
-			System.out.println("myftpserver> ");
-			dos.writeUTF("OK!! - 1");
+			System.setProperty("user.dir", currentDir); 
+			dos.writeUTF("Directory is changed to " + currentDir);
+			System.out.println("Directory is changed to " + currentDir);
+			
 		} else if (fileDirName.equals(".")) {
 			currentDir = currentDir;
 			// cd
-			System.setProperty("user.dir", currentDir);
-			System.out.println("myftpserver> ");
-			dos.writeUTF("OK!! - 2");
+			System.setProperty("user.dir", currentDir); 
+			dos.writeUTF("Directory is changed to " + currentDir);
+			System.out.println("Directory is changed to " + currentDir);
+			
 		} else if (fileDirName.contains("/") && !(fileDirName.equals("../"))) {
 			File f = new File(fileDirName);
 			if (f.exists() && f.isDirectory()) {
 				currentDir = fileDirName;
-				System.setProperty("user.dir", currentDir);
-				System.out.println("myftpserver> ");
-				dos.writeUTF("OK!! 3");
+				System.setProperty("user.dir", currentDir); 
+				dos.writeUTF("Directory is changed to " + currentDir);
+				System.out.println("Directory is changed to " + currentDir);
+				
 			} else {
-				dos.writeUTF("Directory does not exist - 1");
+				dos.writeUTF("Directory does not exist");
+				System.out.println(currentDir + " does not exist");
 			}
 		} else {
 			File f = new File(currentDir + "/" +fileDirName);
 			if (f.exists() && f.isDirectory() && !(fileDirName.equals("../"))) {
 				currentDir = currentDir + "/" + fileDirName;
-				System.setProperty("user.dir", currentDir);
-				System.out.println("myftpserver> ");
-				dos.writeUTF("OK!4");
+				System.setProperty("user.dir", currentDir); 
+				dos.writeUTF("Directory is changed to " + currentDir);
+				System.out.println("Directory is changed to " + currentDir);
 			} else {
-				dos.writeUTF("Directory does not exist - 2");
+				dos.writeUTF("Directory does not exist");
+				System.out.println( currentDir + " does not exist");
 			}
 		}
 
@@ -177,7 +183,8 @@ class ClientHandler extends Thread {
 
 	public void mkdirCommand(String fileDirName, DataOutputStream dos) throws IOException {
 
-		File file = new File(fileDirName);
+		currentDir = System.getProperty("user.dir");
+		File file = new File(currentDir + "/" + fileDirName);
 		if (!file.exists()) {
 			boolean result = file.mkdir();
 			if (result) {
@@ -188,16 +195,14 @@ class ClientHandler extends Thread {
 		} else {
 			returnedMessage = "File already exists";
 		}
-		System.out.println(returnedMessage);
-		System.out.println("myftpserver> ");
+		System.out.println(returnedMessage); 
 		dos.writeUTF(returnedMessage);
 
 	}
 
 	public void pwdCommand(DataOutputStream dos) throws IOException {
 		currentDir = System.getProperty("user.dir");
-		dos.writeUTF(currentDir);
-		System.out.println("myftpserver> ");
+		dos.writeUTF(currentDir); 
 	}
 
 	public void quitCommand(DataOutputStream dos) throws IOException {
@@ -276,6 +281,7 @@ class ClientHandler extends Thread {
 					dos.writeUTF(INVALID_INPUT);
 					break;
 				}
+				System.out.println("myftpserver> ");
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
