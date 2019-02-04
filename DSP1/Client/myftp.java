@@ -16,9 +16,7 @@ public class myftp {
 	static String hostName = "localhost";
 	static boolean isStopped = false;
 	static DataInputStream dis;
-	static DataOutputStream dos; 
-	
-
+	static DataOutputStream dos;
 
 	public static final String GET_COMMAND = "get";
 	public static final String PUT_COMMAND = "put";
@@ -31,135 +29,150 @@ public class myftp {
 	public static final String MKDIR_COMMAND = "mkdir";
 	public static final String PWD_COMMAND = "pwd";
 
-	public static final String QUIT_COMMAND = "quit"; 
-	public static final String QUIT_COMMAND_MESSAGE = "Connection closed!"; 
+	public static final String QUIT_COMMAND = "quit";
+	public static final String QUIT_COMMAND_MESSAGE = "Connection closed!";
 
 	// 8 methods, each for one of the 8 commands
 	// 8 methods, each for one of the 8 commands
-	// --------------------- GET FILE FROM SERVER - RECEIVE FROM SERVER ------------------------
+	// --------------------- GET FILE FROM SERVER - RECEIVE FROM SERVER
+	// ------------------------
 	public static void getCommand(String fileDirName, DataInputStream dis) throws IOException {
 
-		String chunks = dis.readLine();
-		FileOutputStream f = new FileOutputStream(new File(fileDirName));
-		int count = 0;
-		byte[] buffer = new byte[8 * 1024];
-		int chunk_num = 0;
-		while(chunk_num < Integer.parseInt(chunks)) {
-			count = dis.read(buffer);
-			f.write(buffer, 0, count);
-			chunk_num += 1;	
-		};
-		
-		System.out.println("myftp> "+ "successfully get");
-		
+		String receivedMessage = dis.readUTF();
+		if(receivedMessage.equals("getCommand")) {
+			String chunks = dis.readUTF();
+			FileOutputStream f = new FileOutputStream(new File(fileDirName));
+			int count = 0;
+			byte[] buffer = new byte[8 * 1024];
+			int chunk_num = 0;
+			int chunksInt = Integer.parseInt(chunks);
+			while (chunk_num < chunksInt) {
+				count = dis.read(buffer);
+				f.write(buffer, 0, count);
+				chunk_num += 1;
+			}
+
+			System.out.println("myftp> " + "successfully get");
+		}else {
+			System.out.println("myftp> " + receivedMessage);
+		}
+	
 	}
 
 	// ------------------- PUT FILE TO SERVER - SEND TO SERVER--------------------
-	public static void putCommand(String fileDirName,DataInputStream dis) throws IOException {
+	public static void putCommand(String fileDirName, DataInputStream dis) throws IOException {
 		File file = new File(fileDirName);
-		//get file size
-		long fileSize = file.length();
-		double sizeOfFiles = 8.0 * 1024;
-		int chunks = (int) Math.ceil(fileSize/sizeOfFiles);
-		//send chunks
-		dos.writeBytes(chunks + "\n");
-		byte[] buffer = new byte[(int) sizeOfFiles];
-		try (FileInputStream fis = new FileInputStream(file);
-				BufferedInputStream bis = new BufferedInputStream(fis)){
-					int count = 0;
-					while((count = bis.read(buffer)) > 0) 
-					dos.write(buffer, 0, count);		
+		if (file.exists()) {
+			String returnedMessage = "putCommand";
+			dos.writeUTF(returnedMessage);
+			// get file size
+			long fileSize = file.length();
+			double sizeOfFiles = 8.0 * 1024;
+			int chunks = (int) Math.ceil(fileSize / sizeOfFiles);
+			// send chunks
+			dos.writeUTF(String.valueOf(chunks));
+			byte[] buffer = new byte[(int) sizeOfFiles];
+			try (FileInputStream fis = new FileInputStream(file); BufferedInputStream bis = new BufferedInputStream(fis)) {
+				int count = 0;
+				while ((count = bis.read(buffer)) > 0)
+					dos.write(buffer, 0, count);
 			}
-		String receivedMessage = dis.readUTF(); 
-		System.out.println("myftp> "+ receivedMessage);
+			String receivedMessage = dis.readUTF();
+			System.out.println("myftp> " + receivedMessage);
+		}else {
+			String returnedMessage = "File does not exist";
+			System.out.println("myftp> " + returnedMessage);
+			dos.writeUTF(returnedMessage);
+		}
 		
+
 	}
-		
+
 	public static void deleteCommand(DataInputStream dis) throws IOException {
-		String receivedMessage = dis.readUTF(); 
-		System.out.println("myftp> "+ receivedMessage);
+		String receivedMessage = dis.readUTF();
+		System.out.println("myftp> " + receivedMessage);
 	}
 
 	public static void lsCommand(DataInputStream dis) throws IOException {
-		String receivedMessage = dis.readUTF();  
-		System.out.println(receivedMessage); 
-	}
-
-	public static void cdCommand(DataInputStream dis) throws IOException {
-		String receivedMessage = dis.readUTF(); 
-		System.out.println("myftp> "+ receivedMessage);
-	}
-
-	public static void mkdirCommand(DataInputStream dis) throws IOException {
-		
-		String receivedMessage = dis.readUTF(); 
-		System.out.println("myftp> "+ receivedMessage);
-	}
-
-	public static void pwdCommand(DataInputStream dis) throws IOException { 
-		String receivedMessage = dis.readUTF();  
+		String receivedMessage = dis.readUTF();
 		System.out.println(receivedMessage);
 	}
 
-	public static void quitCommand(DataInputStream dis) throws IOException { 
-		String receivedMessage = dis.readUTF(); 
-		System.out.println("Closing this connection .."); 
-		//clientSocket.close();  
-		System.out.println(receivedMessage); 
-		//break; 
-		//System.exit(0);
-		isStopped = true;
-	}	
-
-	public static void invalidInput(DataInputStream dis) throws IOException { 
-		String receivedMessage = dis.readUTF(); 
-		System.out.println("myftp> "+ receivedMessage); 
+	public static void cdCommand(DataInputStream dis) throws IOException {
+		String receivedMessage = dis.readUTF();
+		System.out.println("myftp> " + receivedMessage);
 	}
 
-	public static void main(String args[]) throws IOException  {
+	public static void mkdirCommand(DataInputStream dis) throws IOException {
 
-		try { 
+		String receivedMessage = dis.readUTF();
+		System.out.println("myftp> " + receivedMessage);
+	}
+
+	public static void pwdCommand(DataInputStream dis) throws IOException {
+		String receivedMessage = dis.readUTF();
+		System.out.println(receivedMessage);
+	}
+
+	public static void quitCommand(DataInputStream dis) throws IOException {
+		String receivedMessage = dis.readUTF();
+		System.out.println("Closing this connection ..");
+		// clientSocket.close();
+		System.out.println(receivedMessage);
+		// break;
+		// System.exit(0);
+		isStopped = true;
+	}
+
+	public static void invalidInput(DataInputStream dis) throws IOException {
+		String receivedMessage = dis.readUTF();
+		System.out.println("myftp> " + receivedMessage);
+	}
+
+	public static void main(String args[]) throws IOException {
+
+		try {
 			Scanner scanner = new Scanner(System.in);
-			//System.out.print("myftp> Enter machine name: ");
-			//hostName = scanner.nextLine();
+			// System.out.print("myftp> Enter machine name: ");
+			// hostName = scanner.nextLine();
 			hostName = args[0];
-			//System.out.print("myftp> Enter port number: ");
-			//String clientPortString = scanner.nextLine();
+			// System.out.print("myftp> Enter port number: ");
+			// String clientPortString = scanner.nextLine();
 			String clientPortString = args[1];
-			clientPort = Integer.valueOf(clientPortString); 
-			
+			clientPort = Integer.valueOf(clientPortString);
+
 			Socket clientSocket = new Socket(hostName, clientPort);
 
-			dis = new DataInputStream(clientSocket.getInputStream()); 
-			dos = new DataOutputStream(clientSocket.getOutputStream()); 
+			dis = new DataInputStream(clientSocket.getInputStream());
+			dos = new DataOutputStream(clientSocket.getOutputStream());
 
-			System.out.print("myftp> "); 
+			System.out.print("myftp> ");
 			System.out.println(dis.readUTF());
 
 			while (!isStopped) {
-				isStopped = false; 
+				isStopped = false;
 				System.out.print("myftp> ");
 				String sentMessage = scanner.nextLine();
-				//String sentMessage = args[0];
+				// String sentMessage = args[0];
 				dos.writeUTF(sentMessage);
 
 				String command = "";
 				String fileDirName = "";
 
-				if(sentMessage.contains(" ")) {
+				if (sentMessage.contains(" ")) {
 					String[] splittedCommand = sentMessage.split(" ");
 					command = splittedCommand[0];
 					fileDirName = splittedCommand[1];
-				}else {
+				} else {
 					command = sentMessage;
 				}
 
-				switch(command) {
+				switch (command) {
 				case GET_COMMAND:
 					getCommand(fileDirName, dis);
 					break;
-				case PUT_COMMAND: 
-					putCommand(fileDirName, dis); 
+				case PUT_COMMAND:
+					putCommand(fileDirName, dis);
 					break;
 				case DELETE_COMMAND:
 					deleteCommand(dis);
@@ -179,17 +192,18 @@ public class myftp {
 				case QUIT_COMMAND:
 					quitCommand(dis);
 					break;
-				default: 
+				default:
 					invalidInput(dis);
-					break; 
-				}  
-			}  
+					break;
+				}
+			}
 
-			dis.close(); 
-			dos.close(); 
+			dis.close();
+			dos.close();
 
-		}catch(Exception e){ 
-			e.printStackTrace(); 
-		} 
+		} catch (Exception e) {
+			System.out.println("Error while connecting to the server");
+			e.printStackTrace();
+		}
 	}
 }
