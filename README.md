@@ -1,5 +1,5 @@
 # DSP1_TCP
-This project introduce the basics of the client-server model of distributed systems. It's a simplified versions of FTP client and server. The client executable is called “myftp” and the server executable is called “myftpserver”. 
+This program introduce the basics of the client-server model of distributed systems. It's a simplified versions of FTP client and server. The client executable is called “myftp” and the server executable is called “myftpserver”. 
 
 # The following commands are implemented:
 1. get (get <remote_filename>) -- Copy file with the name <remote_filename> from remote directory to local directory.
