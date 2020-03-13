@@ -11,3 +11,6 @@ This program introduce the basics of the client-server model of distributed syst
 7. pwd (pwd) – Print the current working directory on the remote machine.
 8. quit (quit) – End the FTP session.
 
+### Team Members:
+1. Rana Alshemali
+2. Lei Xian
